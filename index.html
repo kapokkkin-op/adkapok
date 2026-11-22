@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kapok</title>
+<meta name="theme-color" content="#0f5c4d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kapok">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
+<style>
+:root{
+  --bg:#f5f6f3;--surface:#ffffff;--ink:#17201d;--muted:#5d6a65;--line:#dde2de;
+  --accent:#0f5c4d;--accent-ink:#ffffff;--tile1:#d9e8e2;--tile2:#f3e3c3;--tile3:#e2dcf0;--tile4:#f0d9d4;
+  color-scheme:light;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#101614;--surface:#18211e;--ink:#eef2ef;--muted:#9aa8a2;--line:#2a3631;
+    --accent:#5fd0b4;--accent-ink:#08201a;--tile1:#1f3a32;--tile2:#3b3321;--tile3:#2d2940;--tile4:#3c2825;
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Bricolage Grotesque',system-ui,-apple-system,'Segoe UI',sans-serif;line-height:1.5}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header{padding:48px 0 28px}
+h1{font-size:clamp(2.2rem,6vw,3.8rem);line-height:1.05;margin:0 0 12px;font-weight:800;letter-spacing:-.02em}
+header p{margin:0;color:var(--muted);max-width:46ch;font-size:1.05rem}
+.bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding:16px 0 24px}
+input[type=search]{flex:1 1 220px;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:8px 14px;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--ink);font:inherit;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;padding-bottom:40px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.thumb{aspect-ratio:4/3;display:grid;place-items:center;font-size:3rem;font-weight:800;color:var(--ink);opacity:.9}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:4px;flex:1}
+.name{font-weight:600}
+.cat{color:var(--muted);font-size:.9rem}
+.price{font-weight:800;font-size:1.2rem;margin-top:6px}
+.old{color:var(--muted);text-decoration:line-through;font-weight:400;font-size:.9rem;margin-left:6px}
+.buy{margin-top:auto;padding:10px 12px;border-radius:8px;background:var(--accent);color:var(--accent-ink);text-align:center;text-decoration:none;font-weight:600}
+.buy.sold{background:var(--line);color:var(--muted);pointer-events:none}
+.card .buy{margin-top:12px}
+.empty{grid-column:1/-1;color:var(--muted);padding:24px 0}
+footer{border-top:1px solid var(--line);padding:28px 0 40px;color:var(--muted);font-size:.95rem}
+footer a{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Kapok</h1>
+    <p>Light, soft, well-chosen finds at honest prices. Message us on WhatsApp to order.</p>
+  </header>
+
+  <div class="bar">
+    <input type="search" id="q" placeholder="Search products" aria-label="Search products">
+    <div class="chips" id="chips" role="group" aria-label="Categories"></div>
+  </div>
+
+  <main class="grid" id="grid"></main>
+
+  <footer>
+    <div>Order on WhatsApp: <a id="wa" href="#"></a></div>
+    
+  </footer>
+</div>
+
+<script>
+/* ===== EDIT THIS SECTION ===== */
+var PHONE = "919895267767";            // WhatsApp number with country code, no + or spaces
+var PRODUCTS = [
+  /* Add products like this:
+  {name:"Product name", cat:"Category", price:499, old:799, img:""}, */
+];
+/* ============================= */
+
+var tiles=["var(--tile1)","var(--tile2)","var(--tile3)","var(--tile4)"];
+var active="All", grid=document.getElementById("grid"), chips=document.getElementById("chips"), q=document.getElementById("q");
+var cats=["All"].concat(PRODUCTS.map(function(p){return p.cat}).filter(function(c,i,a){return a.indexOf(c)===i}));
+
+function inr(n){return "\u20B9"+n.toLocaleString("en-IN")}
+function link(p){
+  var t="Hi, I would like to order: "+p.name+" ("+inr(p.price)+")";
+  return "https://wa.me/"+PHONE+"?text="+encodeURIComponent(t);
+}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+
+function renderChips(){
+  chips.innerHTML="";
+  cats.forEach(function(c){
+    var b=document.createElement("button");
+    b.className="chip";b.textContent=c;b.setAttribute("aria-pressed",c===active);
+    b.onclick=function(){active=c;renderChips();render()};
+    chips.appendChild(b);
+  });
+}
+function render(){
+  if(!PRODUCTS.length){
+    document.querySelector('.bar').style.display='none';
+    grid.innerHTML='<div class="empty"><strong>Our first products are on the way.</strong><br>Message us on WhatsApp to ask what is coming.</div>';
+    return;
+  }
+  var term=q.value.trim().toLowerCase();
+  var list=PRODUCTS.map(function(p,i){p._i=i;return p}).filter(function(p){
+    return (active==="All"||p.cat===active)&&p.name.toLowerCase().indexOf(term)>-1;
+  });
+  if(!list.length){grid.innerHTML='<div class="empty">No products match. Try another search or category.</div>';return}
+  grid.innerHTML=list.map(function(p){
+    var thumb=p.img?'<img src="'+esc(p.img)+'" alt="'+esc(p.name)+'">':esc(p.name.charAt(0));
+    return '<article class="card"><div class="thumb" style="background:'+tiles[p._i%4]+'">'+thumb+'</div>'+
+      '<div class="body"><div class="name">'+esc(p.name)+'</div><div class="cat">'+esc(p.cat)+'</div>'+
+      '<div class="price">'+inr(p.price)+(p.old?'<span class="old">'+inr(p.old)+'</span>':'')+'</div>'+
+      (p.sold?'<span class="buy sold">Sold out</span>':'<a class="buy" href="'+link(p)+'" target="_blank" rel="noopener">Order on WhatsApp</a>')+
+      '</div></article>';
+  }).join("");
+}
+q.addEventListener("input",render);
+var wa=document.getElementById("wa");wa.textContent="+"+PHONE;wa.href="https://wa.me/"+PHONE;
+renderChips();render();
+if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("./sw.js").catch(function(){})})}
+</script>
+</body>
+</html>
